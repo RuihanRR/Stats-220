@@ -98,7 +98,7 @@ a. The mean daily study hours is `r mean_daily_study`.
 
 b. The total number of days of my observation is `r length_of_study`.
 
-c. The maximum number of time spent on social media per day is `r max_time_social_media`.
+c. The maximum number of time spent on social media per day is `r max_time_social_media` hours.
 
 d. On average I have done `r round(mean_calming_activities, 1)` calming activities per day. These calming activities include reading, writing or self-reflection, praying and socializing.
 
