@@ -1,0 +1,168 @@
+---
+title: My dynamic report
+output: html_fragment
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo=FALSE, message=FALSE, warning=FALSE, error=FALSE)
+library(tidyverse)
+
+```
+
+```{css}
+body {
+    color: black
+    background-color: lightgray;
+    font-family: 'Merriweather', serif;
+    font-size: 18px;
+}
+
+h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 36px;
+    color: #b22222; /* Strong dark red for emphasis */
+    font-weight: bold;
+}
+
+h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 30px;
+    color: #0056b3; /* Deep blue */
+    font-weight: bold;
+}
+
+h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 24px;
+    color: #008000; /* Dark green */
+    font-weight: bold;
+}
+
+p {
+  font-style: italic;
+  font-weight: normal;
+}
+```
+
+## Data on Observations of Daily Productivity and Happiness
+
+The data measures indicators of personal productivity and happiness for 6 consecutive days. Some indicators like productivity and happiness scores were created to measure some objective aspects of my study life like efficiency, study hours and subjective feelings of happiness. I also included several factors to measure what I think may likely contribute to productivity and/or happiness, most of which linked to daily habits and hobbies like exercise, listening to music and etc. The data recorded were mainly numeric because of the very nature of them, and numeric data are better for quantitative analysis of productivity and happiness. However, in my graph-drawing process, I temporarily converted the happiness score variable into a categorical variable for the convenience of displaying bar charts.
+
+# Summary Values
+
+```{r}
+url_of_csv <- "https://docs.google.com/spreadsheets/d/e/2PACX-1vT4jQbWNo8CrobUMNbWxSjuOdgy2v6k-4h9U3MDDUaq_7q4UrRDuhCo5ksnDx5MgUZ3X3wNHZ4JYlBe/pub?output=csv" 
+
+logged_data <- read_csv(url_of_csv)
+
+
+# Rename the data into latest_data
+latest_data <- logged_data %>%
+  rename(study_hours = 2,
+         number_of_things_finished = 3,
+         number_of_things_planned = 4,
+         happiness_score = 5,
+         hours_spent_social_media = 6,
+         minutes_spent_music = 7,
+         exercise_or_not = 8,
+         number_calming_activities = 9,
+         date_of_record = 10)
+
+
+# Remove the Timestamp column for tidiness
+latest_data <- latest_data %>% select(-Timestamp)
+
+## Productivity calculated and added to the latest_data
+productivity <- (latest_data$number_of_things_finished/latest_data$number_of_things_planned) %>% round(2)
+
+latest_data$productivity <- productivity
+
+# Summary Value 1: mean daily study hours
+mean_daily_study <-mean(latest_data$study_hours)
+
+# Summary Value 2: total number of days of my observation
+length_of_study <- length(latest_data$date_of_record)
+
+# Summary value 3: maximum number of time spent on social media a day
+max_time_social_media <- max(latest_data$hours_spent_social_media)
+
+# Summary value 4: mean number of calming activities done a day
+mean_calming_activities <- mean(latest_data$number_calming_activities)
+
+```
+
+## Comments on the summary values:
+Here is a display of my summary statistics:
+
+a. The mean daily study hours is `r mean_daily_study`.
+
+b. The total number of days of my observation is `r length_of_study`.
+
+c. The maximum number of time spent on social media per day is `r max_time_social_media`.
+
+d. On average I have done `r round(mean_calming_activities, 1)` calming activities per day. These calming activities include reading, writing or self-reflection, praying and socializing.
+
+e. On average my happiness score is `r round(mean(latest_data$happiness_score), 1)`, and the happiness score ranges from 1 to 10, from lowest to highest.
+
+
+# Bar Charts
+## Commenting Section: 
+ I have included three 2-variable stacked bar charts to display
+the relationship between happiness score and productivity, the relationship 
+between happiness score and things I have planned for the day as well as that 
+between social media use and happiness. I also included 2 standard 1-variable
+bar charts to explore the relationships between exercise(Yes/No) and happiness, and
+time spent on listening to music and happiness.
+
+```{r}
+# Bar Chart 1: Happiness and productivity(2-variable stacked bar chart)
+
+ggplot(latest_data, aes(x = date_of_record)) +
+  geom_bar(aes(y = happiness_score, fill = "Happiness Score"), stat = "identity", position = "dodge") +
+  geom_bar(aes(y = productivity, fill = "Productivity"), stat = "identity", position = "dodge") +
+  labs(title = "Happiness and Productivity Over Time",
+       x = "Date of Record", 
+       y = "Score") +
+  scale_fill_manual(values = c("Happiness Score" = "pink", "Productivity" = "blue")) +
+  theme_minimal()
+
+# Bar Chart 2: Happiness and things_planned(2-variable stacked bar chart)
+ggplot(latest_data, aes(x = date_of_record)) +
+  geom_bar(aes(y = happiness_score, fill = "Happiness Score"), stat = "identity", position = "dodge") +
+  geom_bar(aes(y = number_of_things_planned, fill = "Number of Things Planned"), stat = "identity", position = "dodge") +
+  labs(title = "Happiness and Things Planned Over Time",
+       x = "Date of Record", 
+       y = "Score") +
+  scale_fill_manual(values = c("Happiness Score" = "pink", "Number of Things Planned" = "grey")) +
+  theme_minimal()
+
+# Bar Chart 3: Happiness and Exercise
+latest_data %>%
+  ggplot() + 
+  geom_bar(aes(y = happiness_score, fill = exercise_or_not)) +
+  scale_fill_manual(values = c("No" = "green","Yes"="yellow")) +
+  theme_minimal()
+  
+# Bar Chart 4: Hours spent on social media and happiness
+ggplot(latest_data, aes(x = date_of_record)) +
+  geom_bar(aes(y = happiness_score, fill = "Happiness Score"), stat = "identity", position = "dodge") +
+  geom_bar(aes(y = hours_spent_social_media, fill = "Hours spent on Social Media"), stat = "identity", position = "dodge") +
+  labs(title = "Happiness and Social Media Hours Over Time",
+       x = "Date of Record", 
+       y = "Score") +
+  scale_fill_manual(values = c("Happiness Score" = "purple", "Hours spent on Social Media" = "yellow")) +
+  theme_minimal()
+
+
+# Bar Chart 5: Hours spent on music and happiness
+
+## First convert happiness scores to categorical variables, so I can use it as the "fill" category
+categorical_happiness <- as.factor(latest_data$happiness_score)
+
+## Add to the latest_data 
+latest_data$categorical_happiness_score <- categorical_happiness
+
+latest_data %>%
+  ggplot() + 
+  geom_bar(aes(y = minutes_spent_music, fill = categorical_happiness_score))
+
